@@ -14,8 +14,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         f"Hi {user.first_name}! I'm a bot that helps you manage your appointments. "
         "Send /start to start a conversation with me. "
         "Send /cancel to end the conversation."
-        "Send /show to show your appointment."
-        "Send /cancel_appointment to cancel your appointment."
     )
 
     return ConversationHandler.END

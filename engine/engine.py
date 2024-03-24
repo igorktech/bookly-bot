@@ -24,7 +24,7 @@ class Engine():
         response = self.handle_dialogue(user_id, messages, intent)
 
         write_messages(chat_id, user_id, messages)
-
+        response = f"INTENT: {intent}\n{response}"
         return response
 
     def handle_dialogue(self, user_id, messages, intent=None):
@@ -33,6 +33,7 @@ class Engine():
             {"role": "system",
              "content": self.system_prompt}
         ]
+
         response = self.builder.get_chat_completion(system + messages)
         assistant_message = response.choices[0].message
         logger.info(f"Assistant message: {assistant_message}")
