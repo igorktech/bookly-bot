@@ -20,17 +20,17 @@ def add_chat(chat_id, user_id):
         {"$push": {"chats": {"chat_id": chat_id, "messages": []}}}
     )
 
-def add_message(chat_id, user_id, role, content):
+def write_messages(chat_id, user_id, messages: list):
     """
-    Append a new message to the conversation for a user in a specific chat.
+    Replace the messages in the conversation for a user in a specific chat
+    with a new list of messages.
     """
-    # Ensure the chat exists before adding a message to it
+    # Ensure the chat exists before updating messages
     add_chat(chat_id, user_id)
 
-    message_doc = {"role": role, "content": content}
-    users_collection.update_one(
+    result = users_collection.update_one(
         {"user_id": user_id, "chats.chat_id": chat_id},
-        {"$push": {"chats.$.messages": message_doc}}
+        {"$set": {"chats.$.messages": messages}}
     )
 
 

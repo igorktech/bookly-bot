@@ -1,16 +1,17 @@
 # builder.py
 
 from engine.shared import Tools
-from nlp_tools.llm import generate_openai
+from nlp_tools.llm import chat_completion_request
+
 
 class Builder:
     def __init__(self, tools: Tools):
         self.tools = tools
 
     def process_input(self, text: str):
-        message_data = {"intent": self.tools.intent_catcher.predict(text),
-                        "date": self.tools.date_extractor.extract(text)}
+        message_data = {"intent": self.tools.intent_catcher.predict(text)}
         return message_data
 
-    def generate_message(self, messages: list[str]):
-        return generate_openai(self.tools.client, self.tools.model, messages)
+    def get_chat_completion(self, messages, tool_choice=None):
+        return chat_completion_request(self.tools.client, messages, tools=self.tools.openai_tools,
+                                       tool_choice=tool_choice, model=self.tools.model)

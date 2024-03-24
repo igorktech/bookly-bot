@@ -24,3 +24,5 @@ telegram==0.0.1
 tqdm==4.66.2
 typing_extensions==4.10.0
 tzlocal==5.2
+
+tenacity~=8.2.3
