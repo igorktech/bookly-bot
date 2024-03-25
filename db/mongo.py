@@ -3,6 +3,7 @@ import pymongo
 from pymongo.server_api import ServerApi
 from pymongo.errors import ConnectionFailure
 import os
+from config import MONGODB_URI
 
 # Configure logging
 logger = configure_logger()
@@ -12,7 +13,7 @@ class MongoDBClient:
     def __init__(self):
         self.client = None
         self.db = None
-        self.mongo_uri = os.getenv("MONGODB_URI")
+        self.mongo_uri = MONGODB_URI
         if not self.mongo_uri:
             raise ValueError("MONGODB_URI environment variable is not set or is empty")
 

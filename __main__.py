@@ -46,17 +46,8 @@ def main():
             MessageHandler(filters.TEXT & ~filters.COMMAND, MESSAGE_HANDLERS["message"]),
         ]
     )
-    if config.DEPLOY_MODE == "polling":
-        app.run_polling()
-    elif config.DEPLOY_MODE == "webhook":
-        # webhook configuration
-        # Start the webhook
-        app.run_webhook(
-            listen="0.0.0.0",
-            port=int(config.PORT),
-            url_path=config.TELEGRAM_BOT_TOKEN,
-            webhook_url=f"https://{config.HEROKU_APP_NAME}.herokuapp.com/{config.TELEGRAM_BOT_TOKEN}"
-        )
+
+    app.run_polling()
 
 
 if __name__ == "__main__":
