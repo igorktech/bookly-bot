@@ -1,8 +1,5 @@
 build:
   docker:
     web: Dockerfile
-release:
-  command:
-    - python __main__.py
 run:
   web: python __main__.py
