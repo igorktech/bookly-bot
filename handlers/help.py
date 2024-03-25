@@ -12,7 +12,7 @@ async def help_(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info("User %s asked for help.", user.first_name)
     await update.message.reply_text(
         f"Hi {user.first_name}! I'm a bot that helps you manage your appointments. "
-        "Send /start to start a conversation with me. "
-        "Send /cancel to end the conversation."
+        "\nSend /start to start a conversation with me. "
+        "\nSend /cancel to end the conversation."
     )
     return

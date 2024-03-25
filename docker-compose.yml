@@ -3,7 +3,9 @@ services:
   bot:
     build: .
     ports:
-      - "80:80"
+      - 8000:8000
+    env_file:
+      - .env
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -11,9 +13,10 @@ services:
     depends_on:
       - db
   db:
+    command: mongod
     image: mongo
     ports:
-      - "27017:27017"
+      - 27017:27017
     volumes:
       - mongodb_data:/data/db
 volumes:

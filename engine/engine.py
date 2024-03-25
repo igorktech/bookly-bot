@@ -52,8 +52,8 @@ class Engine():
             logger.info(f"Assistant response: {response}")
             assistant_message = response.choices[0].message
 
-        messages.append({"role": "assistant", "content": assistant_message.content.strip()})
-        return assistant_message.content.strip()
+        messages.append({"role": "assistant", "content": assistant_message.content})
+        return assistant_message.content
 
     def execute_function_call(self, user_id, message):
         function_name = message.tool_calls[0].function.name

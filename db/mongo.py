@@ -1,5 +1,6 @@
 from logger import configure_logger
 import pymongo
+from pymongo.server_api import ServerApi
 from pymongo.errors import ConnectionFailure
 import os
 
@@ -13,12 +14,17 @@ class MongoDBClient:
         self.db = None
         self.mongo_uri = os.getenv("MONGODB_URI")
         if not self.mongo_uri:
-            raise ValueError("MONGO_URI environment variable is not set or is empty")
+            raise ValueError("MONGODB_URI environment variable is not set or is empty")
 
     def get_db(self):
         if self.client is None:
             try:
-                self.client = pymongo.MongoClient(self.mongo_uri)
+                self.client = pymongo.MongoClient(self.mongo_uri)#, server_api=ServerApi('1'), ssl=True, ssl_cert_reqs='CERT_NONE')
+                # try:
+                #     self.client.admin.command('ping')
+                #     logger.info("Pinged your deployment. You successfully connected to MongoDB!")
+                # except Exception as e:
+                #     logger.error(e)
                 self.db = self.client["chatbot"]
                 logger.info("Successfully connected to MongoDB")
             except ConnectionFailure as e:
