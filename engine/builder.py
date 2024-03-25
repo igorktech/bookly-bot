@@ -12,6 +12,6 @@ class Builder:
         message_data = {"intent": self.tools.intent_catcher.predict(text)}
         return message_data
 
-    def get_chat_completion(self, messages, tool_choice=None):
+    def get_chat_completion(self, messages, tool_choice="auto"):
         return chat_completion_request(self.tools.client, messages, tools=self.tools.openai_tools,
                                        tool_choice=tool_choice, model=self.tools.model)

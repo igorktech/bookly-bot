@@ -1,5 +1,8 @@
 import json
 from datetime import datetime
+
+from openai import BadRequestError
+
 from logger import configure_logger
 from engine.builder import Builder
 from nlp_tools.prompt import prompt_template
@@ -20,7 +23,7 @@ class Engine():
         intent = message_data["intent"]
 
         messages = get_messages(chat_id, user_id)
-        messages.append({"role": "user", "content": text})
+        messages.append({"role": "user", "content": text if text else "empty message"})
         response = self.handle_dialogue(user_id, messages, intent)
 
         write_messages(chat_id, user_id, messages)
@@ -34,9 +37,18 @@ class Engine():
              "content": self.system_prompt}
         ]
 
-        response = self.builder.get_chat_completion(system + messages)
-        assistant_message = response.choices[0].message
-        logger.info(f"Assistant message: {assistant_message}")
+        try:
+            response = self.builder.get_chat_completion(system + messages)
+            logger.info(f"Assistant response: {response}")
+        except BadRequestError as e:
+            logger.error(f"Failed to get chat completion: {e}")
+            return str(e)
+
+        if response.choices:
+            assistant_message = response.choices[0].message
+            logger.info(f"Assistant message: {assistant_message}")
+        else:
+            return "No response"
 
         if assistant_message.tool_calls:
             result = self.execute_function_call(user_id, assistant_message)
@@ -45,14 +57,17 @@ class Engine():
             d = {"role": "function",
                  # "tool_call_id": assistant_message.tool_calls[0].id,
                  "name": assistant_message.tool_calls[0].function.name,
-                 "content": str(result)}
+                 "content": str(result) if result else "No result"}
             messages.append(d)
 
             response = self.builder.get_chat_completion(system + messages)
             logger.info(f"Assistant response: {response}")
-            assistant_message = response.choices[0].message
+            if response.choices:
+                assistant_message = response.choices[0].message
+            else:
+                return "No response"
 
-        messages.append({"role": "assistant", "content": assistant_message.content})
+        messages.append({"role": "assistant", "content": assistant_message.content if assistant_message.content else "No message"})
         return assistant_message.content
 
     def execute_function_call(self, user_id, message):
@@ -69,8 +84,8 @@ class Engine():
             appointment_datetime = self.builder.tools.date_extractor.extract(appointment_datetime_str)
 
             if appointment_datetime and self.appointment_manager.check_availability(appointment_datetime):
-                self.appointment_manager.book_appointment(user_id, appointment_datetime.strftime("%d-%m-%Y %H:%M"))
-                result = "Reserved"
+                self.appointment_manager.book_appointment(user_id, appointment_datetime.strftime("%Y-%m-%d %H:%M"))
+                result = f"Booking reserved successfully for {appointment_datetime.strftime('%Y-%m-%d %H:%M')}."
 
             logger.info(f"Appointment {appointment_datetime} is {result}")
 
@@ -82,18 +97,28 @@ class Engine():
             appointment_datetime_str = f"{date} {time}"
             appointment_datetime = self.builder.tools.date_extractor.extract(appointment_datetime_str)
 
-            self.appointment_manager.cancel_appointment(user_id, appointment_datetime.strftime("%d-%m-%Y %H:%M"))
-            result = "Cancelled"
+            if appointment_datetime:
+                cancellation_result = self.appointment_manager.cancel_appointment(user_id,
+                                                                                  appointment_datetime.strftime(
+                                                                                      "%Y-%m-%d %H:%M"))
+                if cancellation_result:
+                    result = f"Appointment for {appointment_datetime.strftime('%Y-%m-%d %H:%M')} cancelled successfully."
+                else:
+                    result = "Could not find an appointment to cancel."
+            else:
+                result = "Invalid date or time format."
 
         elif function_name == "show_appointment":
-            result = "You have no appointments"
             appointments = self.appointment_manager.get_appointment(user_id)
-
             if appointments:
                 result = "You have the following appointments:\n"
                 for appointment in appointments:
                     result += f"{appointment}\n"
                 result = appointments
+            else:
+                result = "You have no appointments"
+
         else:
             result = f"Error: function {function_name} does not exist"
+
         return result
