@@ -68,7 +68,7 @@ class Engine():
             appointment_datetime_str = f"{date} {time}"
             appointment_datetime = self.builder.tools.date_extractor.extract(appointment_datetime_str)
 
-            if self.appointment_manager.check_availability(appointment_datetime):
+            if appointment_datetime and self.appointment_manager.check_availability(appointment_datetime):
                 self.appointment_manager.book_appointment(user_id, appointment_datetime.strftime("%d-%m-%Y %H:%M"))
                 result = "Reserved"
 
