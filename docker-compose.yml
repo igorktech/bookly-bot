@@ -1,23 +1,45 @@
 version: '3.8'
+
 services:
   bot:
     build: .
     ports:
-      - 8000:8000
+      - "${PORT}:8000"
     env_file:
       - .env
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      MONGODB_URI: "mongodb://db:27017"
+      MONGODB_URI: ${MONGODB_URI}
     depends_on:
-      - db
-  db:
-    command: mongod
-    image: mongo
+      - mongodb
+
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
     ports:
-      - 27017:27017
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017", "--keyFile", "/data/replica.key"]
     volumes:
       - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./replica.key:/data/replica.key
+
+  mongoinit:
+    image: mongo:7.0
+    restart: "no"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./init-replica-set.sh:/init-replica-set.sh
+    entrypoint: ["/bin/bash", "-c", "/init-replica-set.sh"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
 volumes:
   mongodb_data:
+  mongodb_config:
