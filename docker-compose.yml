@@ -36,9 +36,6 @@ services:
     volumes:
       - ./init-replica-set.sh:/init-replica-set.sh
     entrypoint: ["/bin/bash", "-c", "/init-replica-set.sh"]
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
 
 volumes:
   mongodb_data:
